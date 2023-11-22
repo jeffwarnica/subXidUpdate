@@ -1,0 +1,7 @@
+---
+# defaults file for subXidUpdate
+subuid_file: /etc/subuid
+subgid_file: /etc/subgid
+subxid_size: 65536
+found_strategy: fail #or skip
+files: both
