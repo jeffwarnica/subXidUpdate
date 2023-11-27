@@ -63,12 +63,20 @@
       ansible.builtin.set_fact:
         _next_free: "{{ (_highest_entry.start | int) + (_highest_entry.length | int) }}"
 
-- name: Update {{ _filedesc }} with new entry
+- name: Dump
+  ansible.builtin.debug:
+    msg:
+      - "_xid:[{{ _xid }}] : ( _entries | selectattr('id', 'match', _xid) | length ) ==> [{{ _entries | selectattr('id', 'match', _xid) | length  }}]"
+      - "Truthyness of that >0: [{{ (( _entries | selectattr('id', 'match', _xid) | length ) > 0 ) }}] "
+      - "found_strategy: [{{ found_strategy }}]"
+      - "Truthyness of  >0 and found_strategy != 'skip': [{{ (( _entries | selectattr('id', 'match', _xid) | length ) > 0 ) and (found_strategy != 'skip') }}] "
+
+- name: Update {{ _filedesc }} with new entry {{ _xid }}
   ansible.builtin.lineinfile: # noqa name
     path: "{{ _filepath }}"
     line: "{{ _xid }}:{{ _next_free }}:{{ subxid_size }}"
   diff: true
   when:
-    - found_strategy != 'skip'
+    - not ( (( _entries | selectattr('id', 'match', _xid) | length ) > 0 ) and ( found_strategy != 'skip' ) )
     - _entries | selectattr('id', 'match', _xid) | length == 0
 ...
