@@ -1,48 +1,54 @@
 ---
-- name: Parse {{ _file }} file
-  community.general.read_csv:
-    path: "{{ _filepath }}"
-    fieldnames: id,start,length
-    delimiter: ":"
-  register: entries
-
-# - name: Dump
-#   ansible.builtin.debug:
-#     var: entries.list
-#     verbosity: 1
-
-- name: Detect if existing ID exists
+- name: Set default values
   ansible.builtin.set_fact:
-    _exists: "{{ ( entries.list | selectattr('id', 'match', _xid ) | length ) > 0 }}"
+    _entries: []
+    _lines: []
+
+- name: Each line to a list
+  ansible.builtin.set_fact: # noqa ignore-errors
+    _lines: >-
+      {{ lookup("ansible.builtin.file", _filepath).splitlines() }}
+  ignore_errors: true
+
+- name: Turn each line into a dictionary in a list
+  ansible.builtin.set_fact:
+    _entries: "{{ [{id: (entry | split(':'))[0], start: (entry | split(':'))[1], length: (entry | split(':'))[2]}] + _entries }}"
+  loop: "{{ _lines }}"
+  loop_control:
+    label: "Processing line for {{ (entry | split(':'))[0] }}"
+    loop_var: entry
+
+- name: Dump `_entries`
+  ansible.builtin.debug:
+    var: _entries
+    verbosity: 1
 
 - name: Fail if found and found_strategy is fail
   ansible.builtin.fail:
     msg: "ID '{{ _xid }}'' already exists in {{ _filedesc }}. Can not proceed"
   when:
     - found_strategy == "fail"
-    - _exists
+    - _entries | length > 0
+    - _entries | selectattr('id', 'match', _xid) | length > 0
 
-- name: Get highest start ID Entry
-  ansible.builtin.set_fact:
-    highest_entry: "{{ entries.list | sort(attribute='start') | last }}"
+- name: Calculate the next valid window
+  when:
+    - _entries | length > 0
+  block:
+    - name: Get highest start ID Entry
+      ansible.builtin.set_fact:
+        _highest_entry: "{{ (_entries | sort(attribute='start') | last).start }}"
 
-- name: Set next_free
-  ansible.builtin.set_fact:
-    next_free: "{{ (highest_entry.start | int) + (highest_entry.length | int) + 1 }}"
-
-# - name: Dump highest entry
-#   ansible.builtin.debug:
-#     msg: |
-#       highest_entry is {{ highest_entry }}
-#       highest_entry was id {{ highest_entry.id }}
-#       next free is {{ next_free }}
-#     verbosity: 1
+    - name: Set next_free
+      ansible.builtin.set_fact:
+        _next_free: "{{ (_highest_entry.start | int) + (_highest_entry.length | int) }}"
 
 - name: Update {{ _filedesc }} with new entry
   ansible.builtin.lineinfile:
     path: "{{ _filepath }}"
     line: "{{ _xid }}:{{ next_free }}:{{ subxid_size }}"
   when:
-    - found_strategy == 'skip'
-    - not _exists
+    - found_strategy != 'skip'
+    - _entries | length > 0
+    - _entries | selectattr('id', 'match', _xid) | length > 0
 ...

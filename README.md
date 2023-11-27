@@ -22,7 +22,6 @@ Role Variables
 | var | default | notes |
 | --- | ------- | ----- |
 | uid | none    | required |
-| gid | none    | required |
 | files | both | 'uid' 'gid' or 'both' |
 | subuid_file | /etc/subuid |
 | subgid_file | /etc/subgid |
