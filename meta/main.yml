@@ -1,7 +1,11 @@
+---
 galaxy_info:
-  author: your name
-  description: your role description
-  company: your company (optional)
+  role_name: subxidupdate
+  namespace: jeffwarnica
+  author: Jeff Warnica
+  description: >-
+    Assists in configuring subuid and subgid for rootless containers
+  company: Red Hat
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
@@ -16,7 +20,7 @@ galaxy_info:
   # - CC-BY-4.0
   license: license (GPL-2.0-or-later, MIT, etc)
 
-  min_ansible_version: 2.1
+  min_ansible_version: "2.9"
 
   # If this a Container Enabled role, provide the minimum Ansible Container version.
   # min_ansible_container_version:
@@ -27,7 +31,12 @@ galaxy_info:
   # To view available platforms and versions (or releases), visit:
   # https://galaxy.ansible.com/api/v1/platforms/
   #
-  # platforms:
+  platforms:
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+        - "9"
   # - name: Fedora
   #   versions:
   #   - all

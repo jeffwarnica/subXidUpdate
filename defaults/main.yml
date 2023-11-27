@@ -1,7 +1,8 @@
 ---
-# defaults file for subXidUpdate
+_highest_entry: 100000
+_next_free: 165536
 subuid_file: /etc/subuid
 subgid_file: /etc/subgid
 subxid_size: 65536
-found_strategy: fail #or skip
+found_strategy: fail # or skip
 files: both
