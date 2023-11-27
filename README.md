@@ -38,19 +38,18 @@ Example Playbook
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
- ....
-  tasks:
-    - name: Add bob to subXid files
-      ansible.builtin.include_role:
-        name: subXidUpdate
-      vars:
-        subuid_file: tmp/subuid
-        subgid_file: tmp/subgid
-        subxid_size: 65536
-        uid: bob
-        gid: bobgroup
-        found_strategy: skip
-        files: both
+    ....
+      tasks:
+        - name: Add bob to subXid files
+          ansible.builtin.include_role:
+            name: subXidUpdate
+          vars:
+            subuid_file: tmp/subuid
+            subgid_file: tmp/subgid
+            subxid_size: 65536
+            uid: bob
+            found_strategy: skip
+            files: both
 
 License
 -------
