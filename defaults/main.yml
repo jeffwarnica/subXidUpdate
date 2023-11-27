@@ -1,6 +1,6 @@
 ---
 _highest_entry: 100000
-_next_free: 165536
+_next_free: 100000
 subuid_file: /etc/subuid
 subgid_file: /etc/subgid
 subxid_size: 65536

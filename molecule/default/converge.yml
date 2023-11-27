@@ -1,0 +1,17 @@
+---
+- name: Converge
+  hosts: all
+
+  pre_tasks:
+    - name: Ensure `/etc/subgid` and `/etc/subuid` exist on EL systems
+      ansible.builtin.package:
+        name:
+          - setup
+
+  roles:
+    - role: jeffwarnica.subxidupdate
+      vars:
+        uid: jwarnica # noqa var-naming
+    - role: jeffwarnica.subxidupdate
+      vars:
+        uid: tway # noqa var-naming
