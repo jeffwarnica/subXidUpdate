@@ -1,0 +1,51 @@
+---
+- name: Destroy
+  hosts: localhost
+  no_log: "{{ molecule_no_log }}"
+
+  tasks:
+    - name: Handle docker
+      when:
+        - _container_runtime == "docker"
+      block:
+        - name: (docker) Ensure containers are removed
+          community.docker.docker_container:
+            command: sleep infinity
+            image: "{{ container.image }}"
+            name: "{{ container.name }}"
+            state: absent
+          loop: "{{ molecule_yml.platforms }}"
+          loop_control:
+            label: "{{ container.name }}"
+            loop_var: container
+
+    - name: Handle podman
+      when:
+        - _container_runtime == "podman"
+      block:
+        - name: (podman) Ensure containers are removed
+          containers.podman.podman_container:
+            command: sleep infinity
+            image: "{{ container.image }}"
+            name: "{{ container.name }}"
+            state: absent
+          loop: "{{ molecule_yml.platforms }}"
+          loop_control:
+            label: "{{ container.name }}"
+            loop_var: container
+
+    - name: Populate instance config
+      ansible.builtin.set_fact:
+        instance_conf: {}
+
+    - name: Dump instance config
+      ansible.builtin.copy:
+        content: |
+          # Molecule managed
+          {{ instance_conf | to_json | from_json | to_yaml }}
+        dest: "{{ molecule_instance_config }}"
+        mode: u=rw,g=,o=
+      diff: true
+
+  vars:
+    _container_runtime: "{{ lookup('ansible.builtin.env', 'MOLECULE_CONTAINER_RUNTIME') | lower }}"

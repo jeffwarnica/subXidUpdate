@@ -15,6 +15,6 @@
   vars:
     _filedesc: subgid
     _filepath: "{{ subgid_file }}"
-    _xid: "{{ gid }}"
+    _xid: "{{ uid }}"
   when:
     - files in ['gid', 'both']

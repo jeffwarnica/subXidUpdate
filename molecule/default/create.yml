@@ -1,0 +1,92 @@
+---
+- name: Create
+  hosts: localhost
+  no_log: "{{ molecule_no_log }}"
+
+  tasks:
+    - name: Handle docker
+      when:
+        - _container_runtime == "docker"
+      block:
+        - name: (docker) Ensure containers are running
+          community.docker.docker_container:
+            command: sleep infinity
+            image: "{{ container.image }}"
+            name: "{{ container.name }}"
+          loop: "{{ molecule_yml.platforms }}"
+          loop_control:
+            label: "{{ container.name }}"
+            loop_var: container
+
+        - name: (docker) Setup connection plugin
+          ansible.builtin.set_fact:
+            instance_config:
+              connection: community.docker.docker
+              instance: "{{ container.name }}"
+          loop: "{{ molecule_yml.platforms }}"
+          loop_control:
+            label: "{{ container.name }}"
+            loop_var: container
+          register: _docker_instance_config
+
+        - name: (docker) Dump `_docker_instance_config` for debugging
+          ansible.builtin.debug:
+            var: _docker_instance_config
+            verbosity: 1
+
+        - name: (docker) Dump instance config
+          ansible.builtin.copy:
+            content: |
+              ---
+              # Molecule managed
+              {{ _docker_instance_config.results |
+                map(attribute='ansible_facts.instance_config') | list |
+                to_json | from_json | to_yaml }}
+            dest: "{{ molecule_instance_config }}"
+            mode: u=rw,g=,o=
+          diff: true
+
+    - name: Handle podman
+      when:
+        - _container_runtime == "podman"
+      block:
+        - name: (podman) Ensure containers are running
+          containers.podman.podman_container:
+            command: sleep infinity
+            image: "{{ container.image }}"
+            name: "{{ container.name }}"
+          loop: "{{ molecule_yml.platforms }}"
+          loop_control:
+            label: "{{ container.name }}"
+            loop_var: container
+
+        - name: (podman) Setup connection plugin
+          ansible.builtin.set_fact:
+            instance_config:
+              connection: containers.podman.podman
+              instance: "{{ container.name }}"
+          loop: "{{ molecule_yml.platforms }}"
+          loop_control:
+            label: "{{ container.name }}"
+            loop_var: container
+          register: _podman_instance_config
+
+        - name: (podman) Dump `_podman_instance_config` for debugging
+          ansible.builtin.debug:
+            var: _podman_instance_config
+            verbosity: 1
+
+        - name: (podman) Dump instance config
+          ansible.builtin.copy:
+            content: |
+              ---
+              # Molecule managed
+              {{ _podman_instance_config.results |
+                map(attribute='ansible_facts.instance_config') | list |
+                to_json | from_json | to_yaml }}
+            dest: "{{ molecule_instance_config }}"
+            mode: u=rw,g=,o=
+          diff: true
+
+  vars:
+    _container_runtime: "{{ lookup('ansible.builtin.env', 'MOLECULE_CONTAINER_RUNTIME') | lower }}"

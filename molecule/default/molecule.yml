@@ -1,0 +1,13 @@
+---
+platforms:
+  - name: centos-stream-8
+    image: quay.io/centos/centos:stream8
+  - name: centos-stream-9
+    image: quay.io/centos/centos:stream9
+provisioner:
+  name: ansible
+  env:
+    MOLECULE_CONTAINER_RUNTIME: docker
+  config_options:
+    defaults:
+      verbosity: 1
